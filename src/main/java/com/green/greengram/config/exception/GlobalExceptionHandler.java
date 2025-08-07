@@ -1,6 +1,7 @@
 package com.green.greengram.config.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.green.greengram.config.exception.ValidationError;
 import com.green.greengram.config.model.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,35 +25,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-    //Validation 예외가 발생되었을 때 캐치
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex
-                                                                , HttpHeaders headers
-                                                                , HttpStatusCode statusCode
-                                                                , WebRequest request) {
-        List<ValidationError> errors = getValidationError(ex);
-        List<String> messages = errors.stream().map(item -> item.getMessage()).toList();
-        StringBuilder sb = new StringBuilder();
-        for(String message : messages){
-            sb.append(message);
-            sb.append("\n");
-        }
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                             .body(new ResultResponse<>(sb.toString(), errors.toString()));
+  //Validation 예외가 발생되었을 때 캐치
+  @Override
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex
+          , HttpHeaders headers
+          , HttpStatusCode statusCode
+          , WebRequest request) {
+    List<ValidationError> errors = getValidationError(ex);
+    List<String> messages = errors.stream().map(item -> item.getMessage()).toList();
+    StringBuilder sb = new StringBuilder();
+    for(String message : messages){
+      sb.append(message);
+      sb.append("\n");
     }
 
-    private List<ValidationError> getValidationError(BindException e) {
-        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ResultResponse<>(sb.toString(), errors.toString()));
+  }
 
-        List<ValidationError> result = new ArrayList<>(fieldErrors.size());
-        for(FieldError fieldError : fieldErrors){
-            result.add(ValidationError.of(fieldError));
-        }
-        return result;
-        //return fieldErrors.stream().map(item -> ValidationError.of(item)).toList();
+  private List<ValidationError> getValidationError(BindException e) {
+    List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+
+    List<ValidationError> result = new ArrayList<>(fieldErrors.size());
+    for(FieldError fieldError : fieldErrors){
+      result.add(ValidationError.of(fieldError));
     }
+    return result;
+    //return fieldErrors.stream().map(item -> ValidationError.of(item)).toList();
+  }
 
 }

@@ -13,9 +13,9 @@ public class ValidationError {
 
     public static ValidationError of(final FieldError fieldError) {
         return ValidationError.builder()
-                              .field(fieldError.getField())
-                              .message(fieldError.getDefaultMessage())
-                              .build();
+                .field(fieldError.getField())
+                .message(fieldError.getDefaultMessage())
+                .build();
     }
 
     @Override
@@ -23,5 +23,3 @@ public class ValidationError {
         return String.format("field: %s, message: %s", field, message);
     }
 }
-
-

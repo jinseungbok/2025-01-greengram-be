@@ -1,6 +1,5 @@
 package com.green.greengram.config.jwt;
 
-
 import com.green.greengram.config.constants.ConstJwt;
 import com.green.greengram.config.model.JwtUser;
 import com.green.greengram.config.model.UserPrincipal;
@@ -37,7 +36,7 @@ public class JwtTokenManager {
 
     public void setAccessTokenInCookie(HttpServletResponse response, String accessToken) {
         cookieUtils.setCookie(response, constJwt.getAccessTokenCookieName(), accessToken
-                            , constJwt.getAccessTokenCookieValiditySeconds(), constJwt.getAccessTokenCookiePath());
+                , constJwt.getAccessTokenCookieValiditySeconds(), constJwt.getAccessTokenCookiePath());
     }
 
     public String getAccessTokenFromCookie(HttpServletRequest request) {
