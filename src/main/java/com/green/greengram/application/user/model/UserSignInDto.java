@@ -1,6 +1,5 @@
-package com.green.greengram.application.user;
+package com.green.greengram.application.user.model;
 
-import com.green.greengram.application.user.model.UserSignInRes;
 import com.green.greengram.config.model.JwtUser;
 import lombok.Builder;
 import lombok.Getter;
