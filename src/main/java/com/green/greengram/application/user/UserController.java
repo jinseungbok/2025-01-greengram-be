@@ -49,5 +49,4 @@ public class UserController {
         jwtTokenManager.reissue(request, response);
         return new ResultResponse<>("AccessToken 재발행 성공", null);
     }
-
 }

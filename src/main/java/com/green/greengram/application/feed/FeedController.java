@@ -1,5 +1,6 @@
 package com.green.greengram.application.feed;
 
+import com.green.greengram.application.feed.model.FeedGetReq;
 import com.green.greengram.application.feed.model.FeedPostReq;
 import com.green.greengram.config.model.ResultResponse;
 import com.green.greengram.config.model.UserPrincipal;
@@ -7,10 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.xml.transform.Result;
@@ -32,5 +30,13 @@ public class FeedController {
         log.info("pics: {}", pics.size());
         feedService.postFeed(userPrincipal.getSignedUserId(), req, pics);
         return new ResultResponse<>("피드 등록 완료", null);
+    }
+
+    // 페이징, 피드(사진, 댓글(3개만))
+    // 현재는 피드 + 사진 (N+1)
+    @GetMapping
+    public ResultResponse<?> getFeedList(@Valid @ModelAttribute FeedGetReq req) {
+        log.info("req: {}", req);
+        return null;
     }
 }
