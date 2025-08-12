@@ -10,5 +10,4 @@ public class FeedCommentItem {
     private String writerUid;
     private String writerNickName;
     private String writerPic;
-
 }

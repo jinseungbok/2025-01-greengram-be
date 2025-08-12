@@ -1,7 +1,6 @@
 package com.green.greengram.application.feedcomment.model;
 
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
 public class FeedCommentGetReq {

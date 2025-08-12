@@ -8,6 +8,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class FeedCommentGetRes {
-    private boolean moreComment; // 댓글 더 있다 정보
-    private List<FeedCommentItem> commentList; // 댓글 리스트 정보
+    private boolean moreComment; //댓글 더 있다 정보
+    private List<FeedCommentItem> commentList; //댓글 리스트 정보
 }
