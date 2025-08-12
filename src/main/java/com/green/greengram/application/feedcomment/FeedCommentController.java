@@ -8,10 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -22,9 +19,10 @@ public class FeedCommentController {
 
     @PostMapping
     public ResultResponse<?> postFeedComment(@AuthenticationPrincipal UserPrincipal userPrincipal
-                                           , @Valid @RequestPart FeedCommentPostReq req) {
+                                           , @Valid @RequestBody FeedCommentPostReq req) {
         log.info("signedUserId: {}", userPrincipal.getSignedUserId());
         log.info("req: {}", req);
-        return null;
+        long feedCommentId = feedCommentService.postFeedComment(userPrincipal.getSignedUserId(), req);
+        return new ResultResponse<>("", feedCommentId);
     }
 }
