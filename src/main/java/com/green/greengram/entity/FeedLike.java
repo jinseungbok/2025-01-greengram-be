@@ -8,14 +8,17 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
-public class FeedPic extends CreatedAt {
+public class FeedLike extends CreatedAt {
     @EmbeddedId
-    private FeedPicIds feedPicIds;
+    private FeedLikeIds feedLikeIds;
 
-    //관계설정
     @ManyToOne
-    @JoinColumn(name = "feed_id")
     @MapsId("feedId")
+    @JoinColumn(name = "feed_id")
     private Feed feed;
+
+    @ManyToOne
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
 }
