@@ -58,7 +58,7 @@ public class FeedService {
             //startIdx:0, size: 4
             FeedCommentGetReq req = new FeedCommentGetReq(feedGetRes.getFeedId(), constComment.startIdx, constComment.needForViewCount);
             List<FeedCommentItem> commentList = feedCommentMapper.findAllByFeedIdLimitedTo(req);
-            boolean moreComment = commentList.size() > constComment.needForViewCount; // row 수가 4였을 때만 true가 담기고, row수가
+            boolean moreComment = commentList.size() > constComment.needForViewCount; // row 수가 4였을 때만 true가 담기고, row수가 0~3인 경우 false
             FeedCommentGetRes feedCommentGetRes = new FeedCommentGetRes(moreComment, commentList);
             feedGetRes.setComments(feedCommentGetRes);
             if(moreComment) { //마지막 댓글 삭제
