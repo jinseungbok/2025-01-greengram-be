@@ -1,15 +1,15 @@
 package com.green.greengram.application.user;
 
-import com.green.greengram.application.user.model.UserSignInDto;
-import com.green.greengram.application.user.model.UserSignInReq;
-import com.green.greengram.application.user.model.UserSignUpReq;
+import com.green.greengram.application.user.model.*;
 import com.green.greengram.config.jwt.JwtTokenManager;
 import com.green.greengram.config.model.ResultResponse;
+import com.green.greengram.config.model.UserPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +30,7 @@ public class UserController {
         return new ResultResponse<>("", 1);
     }
 
+    //response는 쿠키에 AT, RT을 담기 위해 필요하다.
     @PostMapping("/sign-in")
     public ResultResponse<?> signIn(@Valid @RequestBody UserSignInReq req, HttpServletResponse response) {
         log.info("req: {}", req);
@@ -48,5 +49,21 @@ public class UserController {
     public ResultResponse<?> reissue(HttpServletResponse response, HttpServletRequest request) {
         jwtTokenManager.reissue(request, response);
         return new ResultResponse<>("AccessToken 재발행 성공", null);
+    }
+
+    @GetMapping("/profile")
+    public ResultResponse<?> getProfileUser(@AuthenticationPrincipal UserPrincipal userPrincipal
+            , @RequestParam("profile_user_id") long profileUserId) {
+        log.info("profileUserId: {}", profileUserId);
+        UserProfileGetDto dto = new UserProfileGetDto(userPrincipal.getSignedUserId(), profileUserId);
+        UserProfileGetRes userProfileGetRes = userService.getProfileUser(dto);
+        return new ResultResponse<>("프로파일 유저 정보", userProfileGetRes);
+    }
+
+    @PatchMapping("/profile/pic")
+    public ResultResponse<?> patchProfilePic(@AuthenticationPrincipal UserPrincipal userPrincipal
+            , @RequestPart MultipartFile pic) {
+        String savedFileName = userService.patchProfilePic(userPrincipal.getSignedUserId(), pic);
+        return new ResultResponse<>("프로파일 사진 수정 완료", savedFileName);
     }
 }

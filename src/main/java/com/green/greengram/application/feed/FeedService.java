@@ -8,15 +8,21 @@ import com.green.greengram.application.feedcomment.FeedCommentMapper;
 import com.green.greengram.application.feedcomment.model.FeedCommentGetReq;
 import com.green.greengram.application.feedcomment.model.FeedCommentGetRes;
 import com.green.greengram.application.feedcomment.model.FeedCommentItem;
+import com.green.greengram.application.follow.FollowRepository;
+import com.green.greengram.application.follow.FollowService;
 import com.green.greengram.config.constants.ConstComment;
 import com.green.greengram.config.util.ImgUploadManager;
 import com.green.greengram.entity.Feed;
+import com.green.greengram.entity.FeedComment;
 import com.green.greengram.entity.User;
+import com.green.greengram.entity.UserFollowIds;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -67,5 +73,4 @@ public class FeedService {
         }
         return list;
     }
-
 }

@@ -22,10 +22,12 @@ public class FeedController {
     private final FeedService feedService;
 
     private final int MAX_PIC_COUNT = 10;
+
     @PostMapping
     public ResultResponse<?> postFeed(@AuthenticationPrincipal UserPrincipal userPrincipal
             , @Valid @RequestPart FeedPostReq req
             , @RequestPart(name = "pic") List<MultipartFile> pics) {
+
         if(pics.size() > MAX_PIC_COUNT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST
                     , String.format("사진은 %d장까지 선택 가능합니다.", MAX_PIC_COUNT));
@@ -48,6 +50,7 @@ public class FeedController {
                 .signedUserId(userPrincipal.getSignedUserId())
                 .startIdx((req.getPage() - 1) * req.getRowPerPage())
                 .size(req.getRowPerPage())
+                .profileUserId(req.getProfileUserId())
                 .build();
         List<FeedGetRes> result = feedService.getFeedList(feedGetDto);
         return new ResultResponse<>(String.format("rows: %d", result.size())
