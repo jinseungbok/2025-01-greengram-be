@@ -5,17 +5,15 @@ import com.green.greengram.application.feed.model.FeedGetRes;
 import com.green.greengram.application.feed.model.FeedPostReq;
 import com.green.greengram.application.feed.model.FeedPostRes;
 import com.green.greengram.application.feedcomment.FeedCommentMapper;
+import com.green.greengram.application.feedcomment.FeedCommentRepository;
 import com.green.greengram.application.feedcomment.model.FeedCommentGetReq;
 import com.green.greengram.application.feedcomment.model.FeedCommentGetRes;
 import com.green.greengram.application.feedcomment.model.FeedCommentItem;
-import com.green.greengram.application.follow.FollowRepository;
-import com.green.greengram.application.follow.FollowService;
+import com.green.greengram.application.feedlike.FeedLikeRepository;
 import com.green.greengram.config.constants.ConstComment;
 import com.green.greengram.config.util.ImgUploadManager;
 import com.green.greengram.entity.Feed;
-import com.green.greengram.entity.FeedComment;
 import com.green.greengram.entity.User;
-import com.green.greengram.entity.UserFollowIds;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +30,11 @@ import java.util.List;
 public class FeedService {
     private final FeedMapper feedMapper;
     private final FeedCommentMapper feedCommentMapper;
+    private final FeedLikeRepository feedLikeRepository;
     private final FeedRepository feedRepository;
     private final ImgUploadManager imgUploadManager;
     private final ConstComment constComment;
+    private final FeedCommentRepository feedCommentRepository;
 
     @Transactional
     public FeedPostRes postFeed(long signedUserId, FeedPostReq req, List<MultipartFile> pics) {
@@ -58,19 +58,40 @@ public class FeedService {
 
     public List<FeedGetRes> getFeedList(FeedGetDto dto) {
         List<FeedGetRes> list = feedMapper.findAllLimitedTo(dto);
-        //각 피드에서 사진 가져오기, 댓글 가져오기(4개만)
+
         for(FeedGetRes feedGetRes : list) {
             feedGetRes.setPics(feedMapper.findAllPicByFeedId(feedGetRes.getFeedId()));
             //startIdx:0, size: 4
             FeedCommentGetReq req = new FeedCommentGetReq(feedGetRes.getFeedId(), constComment.startIdx, constComment.needForViewCount);
             List<FeedCommentItem> commentList = feedCommentMapper.findAllByFeedIdLimitedTo(req);
-            boolean moreComment = commentList.size() > constComment.needForViewCount; // row 수가 4였을 때만 true가 담기고, row수가 0~3인 경우 false
+            boolean moreComment = commentList.size() > constComment.needForViewCount; //row수가 4였을 때만 true가 담기고, row수가 0~3인 경우는 false가 담긴다.
             FeedCommentGetRes feedCommentGetRes = new FeedCommentGetRes(moreComment, commentList);
             feedGetRes.setComments(feedCommentGetRes);
             if(moreComment) { //마지막 댓글 삭제
-                commentList.remove(commentList.size() - 1); // 마지막 아이템 삭제
+                commentList.remove(commentList.size() - 1); //마지막 아이템 삭제
             }
         }
         return list;
     }
+
+    @Transactional
+    public void deleteFeed(long signedUserId, long feedId) {
+        Feed feed = feedRepository.findById(feedId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "feed_id가 존재하지 않습니다."));
+        if(feed.getWriterUser().getUserId() != signedUserId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "피드 삭제 권한이 없습니다.");
+        }
+        //해당 피드 좋아요 삭제
+        feedLikeRepository.deleteByIdFeedId(feedId);
+
+        //해당 피드 댓글 삭제
+        feedCommentRepository.deleteByFeedFeedId(feedId);
+
+        //피드, 피드 사진 삭제
+        feedRepository.delete(feed);
+
+        //해당 피드 사진 폴더 삭제
+        imgUploadManager.removeFeedDirectory(feedId);
+    }
+
 }

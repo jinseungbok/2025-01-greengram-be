@@ -88,10 +88,17 @@ public class UserService {
     public String patchProfilePic(long signedUserId, MultipartFile pic) {
         User user = userRepository.findById(signedUserId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다."));
-
         imgUploadManager.removeProfileDirectory(signedUserId);
         String savedFileName = imgUploadManager.saveProfilePic(signedUserId, pic);
         user.setPic(savedFileName);
         return savedFileName;
+    }
+
+    @Transactional
+    public void deleteProfilePic(long signedUserId) {
+        User user = userRepository.findById(signedUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다."));
+        imgUploadManager.removeProfileDirectory(signedUserId);
+        user.setPic(null);
     }
 }

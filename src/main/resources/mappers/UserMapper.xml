@@ -22,5 +22,4 @@
         ON fwing.from_user_id = u.user_id
         WHERE u.user_id = #{profileUserId}
     </select>
-
 </mapper>
