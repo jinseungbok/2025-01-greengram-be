@@ -92,6 +92,11 @@ public class FeedService {
 
         //해당 피드 사진 폴더 삭제
         imgUploadManager.removeFeedDirectory(feedId);
-    }
 
+        //해당 피드 좋아요 수 표시
+        feedLikeRepository.findFeedLikesByFeed(feed);
+
+        log.info("feedId={}, likeCount={}", feed.getFeedId());
+
+    }
 }

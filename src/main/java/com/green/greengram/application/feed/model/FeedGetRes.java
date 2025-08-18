@@ -18,7 +18,8 @@ public class FeedGetRes {
     private String writerNickName;
     private String writerPic;
     private int isLike; //0: 좋아요 아닌 피드, 1: 좋아요한 피드
+    private Integer likeCount; // 좋아요 수
     private List<String> pics;
 
-    private FeedCommentGetRes comments;
+    private FeedCommentGetRes comments; // 댓글 정보
 }
