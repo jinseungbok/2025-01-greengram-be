@@ -10,8 +10,8 @@ import com.green.greengram.application.feedcomment.model.FeedCommentGetReq;
 import com.green.greengram.application.feedcomment.model.FeedCommentGetRes;
 import com.green.greengram.application.feedcomment.model.FeedCommentItem;
 import com.green.greengram.application.feedlike.FeedLikeRepository;
-import com.green.greengram.config.constants.ConstComment;
-import com.green.greengram.config.util.ImgUploadManager;
+import com.green.greengram.configuration.constants.ConstComment;
+import com.green.greengram.configuration.util.ImgUploadManager;
 import com.green.greengram.entity.Feed;
 import com.green.greengram.entity.User;
 import jakarta.transaction.Transactional;
@@ -62,7 +62,7 @@ public class FeedService {
         for(FeedGetRes feedGetRes : list) {
             feedGetRes.setPics(feedMapper.findAllPicByFeedId(feedGetRes.getFeedId()));
             //startIdx:0, size: 4
-            FeedCommentGetReq req = new FeedCommentGetReq(feedGetRes.getFeedId(), constComment.startIdx, constComment.needForViewCount);
+            FeedCommentGetReq req = new FeedCommentGetReq(feedGetRes.getFeedId(), constComment.startIndex, constComment.needForViewCount);
             List<FeedCommentItem> commentList = feedCommentMapper.findAllByFeedIdLimitedTo(req);
             boolean moreComment = commentList.size() > constComment.needForViewCount; //row수가 4였을 때만 true가 담기고, row수가 0~3인 경우는 false가 담긴다.
             FeedCommentGetRes feedCommentGetRes = new FeedCommentGetRes(moreComment, commentList);
@@ -81,6 +81,7 @@ public class FeedService {
         if(feed.getWriterUser().getUserId() != signedUserId) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "피드 삭제 권한이 없습니다.");
         }
+
         //해당 피드 좋아요 삭제
         feedLikeRepository.deleteByIdFeedId(feedId);
 
@@ -92,11 +93,6 @@ public class FeedService {
 
         //해당 피드 사진 폴더 삭제
         imgUploadManager.removeFeedDirectory(feedId);
-
-        //해당 피드 좋아요 수 표시
-        feedLikeRepository.findFeedLikesByFeed(feed);
-
-        log.info("feedId={}, likeCount={}", feed.getFeedId());
-
     }
+
 }
