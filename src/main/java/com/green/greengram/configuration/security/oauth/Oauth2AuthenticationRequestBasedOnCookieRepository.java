@@ -1,11 +1,13 @@
 package com.green.greengram.configuration.security.oauth;
 
-import com.green.greengram.configuration.constants.ConstOAuth2;
 import com.green.greengram.configuration.util.CookieUtils;
+import com.green.greengram.configuration.constants.ConstOAuth2;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -20,7 +22,7 @@ public class Oauth2AuthenticationRequestBasedOnCookieRepository
     @Override
     public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
         return cookieUtils.getValue(request
-                , constOAuth2.authorizationRequestCookieName()
+                , constOAuth2.authorizationRequestCookieName
                 , OAuth2AuthorizationRequest.class);
     }
 
@@ -36,7 +38,7 @@ public class Oauth2AuthenticationRequestBasedOnCookieRepository
                 , "/");
 
         //FE 요청한 redirect_uri 쿠키에 저장한다.
-        String redirectUriAfterLogin = request.getParameter(constOAuth2.getRedirectUriParamCookieName());
+        String redirectUriAfterLogin = request.getParameter(constOAuth2.redirectUriParamCookieName);
         cookieUtils.setCookie(response
                 , constOAuth2.redirectUriParamCookieName
                 , redirectUriAfterLogin
@@ -50,7 +52,7 @@ public class Oauth2AuthenticationRequestBasedOnCookieRepository
     }
 
     public void removeAuthorizationCookies(HttpServletResponse response) {
-        cookieUtils.deleteCookie(response, constOAuth2.authorizationRequestCookieName);
-        cookieUtils.deleteCookie(response, constOAuth2.redirectUriParamCookieName);
+        cookieUtils.deleteCookie(response, constOAuth2.authorizationRequestCookieName, "/");
+        cookieUtils.deleteCookie(response, constOAuth2.redirectUriParamCookieName, "/");
     }
 }

@@ -2,6 +2,7 @@ package com.green.greengram.configuration.security.oauth;
 
 import com.green.greengram.application.user.UserRepository;
 import com.green.greengram.configuration.enumcode.model.EnumUserRole;
+import com.green.greengram.configuration.model.JwtUser;
 import com.green.greengram.configuration.model.UserPrincipal;
 import com.green.greengram.configuration.security.SignInProviderType;
 import com.green.greengram.configuration.security.oauth.userinfo.Oauth2UserInfo;
@@ -14,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -73,7 +77,10 @@ public class MyOauth2UserService extends DefaultOAuth2UserService {
         List<EnumUserRole> roles = user.getUserRoles().stream().map(item -> item.getUserRoleIds()
                 .getRoleCode()).toList();
 
-        UserPrincipal myUserDetails = new UserPrincipal(user.getUserId(), roles);
+        String nickName = user.getNickName() == null ? user.getUid() : user.getNickName();
+        JwtUser jwtUser = new OAuth2JwtUser(nickName, user.getPic(), user.getUserId(), roles);
+
+        UserPrincipal myUserDetails = new UserPrincipal(jwtUser);
         return myUserDetails;
     }
 }
