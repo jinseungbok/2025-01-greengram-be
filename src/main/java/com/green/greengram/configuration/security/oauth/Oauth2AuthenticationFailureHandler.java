@@ -1,5 +1,6 @@
 package com.green.greengram.configuration.security.oauth;
 
+
 import com.green.greengram.configuration.constants.ConstOAuth2;
 import com.green.greengram.configuration.util.CookieUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +29,8 @@ public class Oauth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
 
         //FE - Redirect-Url 획득 from Cookie
         String redirectUrl = cookieUtils.getValue(req, constOAuth2.redirectUriParamCookieName);
+
+        log.info("Oauth2AuthenticationFailureHandler - onAuthenticationFailure(): {}", redirectUrl);
 
         //URL에 에러 쿼리스트링 추가
         String targetUrl = redirectUrl == null ? "/" : UriComponentsBuilder.fromUriString(redirectUrl)

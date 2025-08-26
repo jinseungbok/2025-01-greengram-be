@@ -1,5 +1,6 @@
 package com.green.greengram.configuration.security.oauth;
 
+
 import com.green.greengram.configuration.constants.ConstJwt;
 import com.green.greengram.configuration.constants.ConstOAuth2;
 import com.green.greengram.configuration.jwt.JwtTokenManager;
@@ -30,7 +31,7 @@ public class Oauth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res, Authentication auth)
-        throws IOException, ServletException {
+            throws IOException, ServletException {
         if(res.isCommitted()) { //응답 객체가 만료된 경우 (이전 프로세스에서 응답처리를 했는 상태)
             log.error("onAuthenticationSuccess called with a committed response {}", res);
             return;
@@ -52,18 +53,24 @@ public class Oauth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         //쿼리스트링 생성을 위한 준비과정
         UserPrincipal myUserDetails = (UserPrincipal) auth.getPrincipal();
 
-        OAuth2JwtUser oAuth2JwtUser = (OAuth2JwtUser)myUserDetails.getJwtUser();
+        OAuth2JwtUser oauth2JwtUser = (OAuth2JwtUser)myUserDetails.getJwtUser();
 
-        JwtUser jwtUser = new JwtUser(oAuth2JwtUser.getSignedUserId(), oAuth2JwtUser.getRoles());
+        JwtUser jwtUser = new JwtUser(oauth2JwtUser.getSignedUserId(), oauth2JwtUser.getRoles());
 
-        //AT, RT 생성
-        String refreshToken = jwtTokenManager.generateRefreshToken(jwtUser);
-
-        int maxAge = 1_296_000; //15 * 24 * 60 * 60, 15일의 초(second)값
-        cookieUtils.setCookie(res, constJwt.getRefreshTokenCookieName()
-                , refreshToken
-                , constJwt.getRefreshTokenCookieValiditySeconds()
-                , constJwt.getRefreshTokenCookiePath());
+        //AT, RT 생성 후 쿠키에 저장
+        jwtTokenManager.issue(res, jwtUser);
+//        String accessToken = jwtTokenManager.generateAccessToken(jwtUser);
+//        String refreshToken = jwtTokenManager.generateRefreshToken(jwtUser);
+//
+//        cookieUtils.setCookie(res, constJwt.getAccessTokenCookieName()
+//                                 , accessToken
+//                                 , constJwt.getAccessTokenCookieValiditySeconds()
+//                                 , constJwt.getAccessTokenCookiePath());
+//
+//        cookieUtils.setCookie(res, constJwt.getRefreshTokenCookieName()
+//                                 , refreshToken
+//                                 , constJwt.getRefreshTokenCookieValiditySeconds()
+//                                 , constJwt.getRefreshTokenCookiePath());
 
         /*
             쿼리스트링 생성
@@ -75,9 +82,9 @@ public class Oauth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             "fe/redirect?user_id=20&nick_name=홍길동&pic=abc.jpg"
          */
         return UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("user_id", oAuth2JwtUser.getSignedUserId())
-                .queryParam("nick_name", oAuth2JwtUser.getNickName()).encode()
-                .queryParam("pic", oAuth2JwtUser.getPic())
+                .queryParam("user_id", oauth2JwtUser.getSignedUserId())
+                .queryParam("nick_name", oauth2JwtUser.getNickName()).encode()
+                .queryParam("pic", oauth2JwtUser.getPic())
                 .build()
                 .toUriString();
     }
