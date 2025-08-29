@@ -1,7 +1,6 @@
 package com.green.greengram.application.user;
 
 import com.green.greengram.application.user.model.*;
-import com.green.greengram.configuration.constants.ConstOauth2Naver;
 import com.green.greengram.configuration.enumcode.model.EnumUserRole;
 import com.green.greengram.configuration.model.JwtUser;
 import com.green.greengram.configuration.security.SignInProviderType;
@@ -15,12 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 
 @Slf4j
@@ -31,7 +24,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImgUploadManager imgUploadManager;
-    private final ConstOauth2Naver constOauth2Naver;
 
     @Transactional
     public void signUp(UserSignUpReq req, MultipartFile pic) {
@@ -53,7 +45,7 @@ public class UserService {
     }
 
     public UserSignInDto signIn(UserSignInReq req) {
-        User user = userRepository.findByUid(req.getUid()); //일치하는 아이디가 있는지 확인, null이 넘어오면 uid가 없음
+        User user = userRepository.findByUidAndProviderType(req.getUid(), SignInProviderType.LOCAL); //일치하는 아이디가 있는지 확인, null이 넘어오면 uid가 없음
         //passwordEncoder 내부에는 jbcrypt 객체가 있다.
         if(user == null || !passwordEncoder.matches(req.getUpw(), user.getUpw())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아이디/비밀번호를 확인해 주세요.");
@@ -85,16 +77,6 @@ public class UserService {
                 .build();
     }
 
-    public void signOut(Long signedUserId) {
-        User user = userRepository.findById(signedUserId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다."));
-        switch(user.getProviderType()) {
-            case KAKAO -> kakaoLogout(user.getAccessToken());
-            case NAVER -> naverLogout(user.getAccessToken());
-            case GOOGLE -> googleLogout(user.getAccessToken());
-        }
-    }
-
     public UserProfileGetRes getProfileUser(UserProfileGetDto dto) {
         return userMapper.findProfileByUserId(dto);
     }
@@ -115,68 +97,5 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다."));
         imgUploadManager.removeProfileDirectory(signedUserId);
         user.setPic(null);
-    }
-
-    private void naverLogout(String accessToken) {
-        String params = String.format("grant_type=delete&service_provider=NAVER&client_id=%s&client_secret=%s&access_token=%s"
-                , constOauth2Naver.clientId, constOauth2Naver.clientSecret, accessToken);
-        try {
-            URL url = new URL("https://nid.naver.com/oauth2.0/token?" + params);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-            String result = "";
-            String line = "";
-
-            while ((line = br.readLine()) != null) {
-                result += line;
-            }
-            log.info("naver-logout: {}", result);
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
-    private void kakaoLogout(String accessToken) {
-        String reqURL = "https://kapi.kakao.com/v1/user/logout";
-        try {
-            URL url = new URL(reqURL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-
-            int responseCode = conn.getResponseCode();
-            System.out.println("responseCode : " + responseCode);
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-            String result = "";
-            String line = "";
-
-            while ((line = br.readLine()) != null) {
-                result += line;
-            }
-            log.info("kakao-logout: {}", result);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    private void googleLogout(String accessToken) {
-        String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?access_token=" + accessToken;
-        try {
-            URL url = new URL(tokenInfoUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            int responseCode = conn.getResponseCode();
-            System.out.println("Google Logout Response Code: " + responseCode);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
